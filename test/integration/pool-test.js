@@ -1,6 +1,6 @@
 var tap = require('tap')
-var Pool = require('..').Pool
-var utils = require('./utils')
+var Pool = require('../..').Pool
+var utils = require('../utils')
 var ResourceFactory = utils.ResourceFactory
 
 tap.test('Pool expands only to max limit', function (t) {
@@ -10,7 +10,9 @@ tap.test('Pool expands only to max limit', function (t) {
     name: 'test1',
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
+    validate: resourceFactory.validate.bind(resourceFactory),
     max: 1,
+    min: 0,
     refreshIdle: false
   }
 
@@ -41,6 +43,7 @@ tap.test('Pool respects min limit', function (t) {
     name: 'test-min',
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
+    validate: resourceFactory.validate.bind(resourceFactory),
     min: 1,
     max: 2,
     refreshIdle: false
@@ -55,57 +58,6 @@ tap.test('Pool respects min limit', function (t) {
   }, 10)
 })
 
-tap.test('min and max limit defaults', function (t) {
-  var resourceFactory = new ResourceFactory()
-
-  var factory = {
-    name: 'test-limit-defaults',
-    create: resourceFactory.create.bind(resourceFactory),
-    destroy: resourceFactory.destroy.bind(resourceFactory),
-    refreshIdle: false
-  }
-  var pool = Pool(factory)
-
-  t.equal(1, pool.getMaxPoolSize())
-  t.equal(0, pool.getMinPoolSize())
-  t.end()
-})
-
-tap.test('malformed min and max limits are ignored', function (t) {
-  var resourceFactory = new ResourceFactory()
-  var factory = {
-    name: 'test-limit-defaults2',
-    create: resourceFactory.create.bind(resourceFactory),
-    destroy: resourceFactory.destroy.bind(resourceFactory),
-    refreshIdle: false,
-    min: 'asf',
-    max: []
-  }
-  var pool = Pool(factory)
-
-  t.equal(1, pool.getMaxPoolSize())
-  t.equal(0, pool.getMinPoolSize())
-  t.end()
-})
-
-tap.test('min greater than max sets to max minus one', function (t) {
-  var resourceFactory = new ResourceFactory()
-  var factory = {
-    name: 'test-limit-defaults3',
-    create: resourceFactory.create.bind(resourceFactory),
-    destroy: resourceFactory.destroy.bind(resourceFactory),
-    refreshIdle: false,
-    min: 5,
-    max: 3
-  }
-  var pool = Pool(factory)
-
-  t.equal(3, pool.getMaxPoolSize())
-  t.equal(2, pool.getMinPoolSize())
-  utils.stopPool(pool)
-  t.end()
-})
-
 tap.test('removes correct object on reap', function (t) {
   var resourceFactory = new ResourceFactory()
 
@@ -113,7 +65,9 @@ tap.test('removes correct object on reap', function (t) {
     name: 'test3',
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
+    validate: resourceFactory.validate.bind(resourceFactory),
     max: 2,
+    min: 0,
     refreshIdle: false
   })
 
@@ -145,7 +99,9 @@ tap.test('tests drain', function (t) {
     name: 'test4',
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
+    validate: resourceFactory.validate.bind(resourceFactory),
     max: 2,
+    min: 0,
     idleTimeoutMillis: 300000
   })
 
@@ -185,8 +141,10 @@ tap.test('handle creation errors', function (t) {
       }
       created++
     },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 1,
+    min: 0,
     idleTimeoutMillis: 1000
   })
 
@@ -233,8 +191,10 @@ tap.test('handle creation errors for delayed creates', function (t) {
       }
       created++
     },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 1,
+    min: 0,
     idleTimeoutMillis: 1000
   })
 
@@ -268,8 +228,10 @@ tap.test('pooled decorator should acquire and release', function (t) {
   var pool = Pool({
     name: 'test1',
     create: function (callback) { callback(null, { id: Math.floor(Math.random() * 1000) }) },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 1,
+    min: 0,
     refreshIdle: false
   })
 
@@ -304,8 +266,10 @@ tap.test('pooled decorator should pass arguments and return values', function (t
   var pool = Pool({
     name: 'test1',
     create: function (callback) { callback(null, { id: Math.floor(Math.random() * 1000) }) },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 1,
+    min: 0,
     idleTimeoutMillis: 100
   })
 
@@ -335,8 +299,10 @@ tap.test('pooled decorator should allow undefined callback', function (t) {
   var pool = Pool({
     name: 'test1',
     create: function (callback) { callback(null, { id: Math.floor(Math.random() * 1000) }) },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 1,
+    min: 0,
     idleTimeoutMillis: 100
   })
 
@@ -362,7 +328,8 @@ tap.test('pooled decorator should allow undefined callback', function (t) {
 //   var pool = Pool({
 //     name: 'test1',
 //     create: function (callback) { callback(new Error('Pool error')) },
-//     destroy: function (client) {},
+//     destroy: () => {},
+//     validate: () => {},
 //     max: 1,
 //     idleTimeoutMillis: 100
 //   })
@@ -388,8 +355,10 @@ tap.test('getPoolSize', function (t) {
   var pool = Pool({
     name: 'test1',
     create: function (callback) { callback(null, { id: Math.floor(Math.random() * 1000) }) },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => true,
     max: 2,
+    min: 0,
     idleTimeoutMillis: 100
   })
 
@@ -428,8 +397,10 @@ tap.test('availableObjectsCount', function (t) {
   var pool = Pool({
     name: 'test1',
     create: function (callback) { callback(null, { id: Math.floor(Math.random() * 1000) }) },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => true,
     max: 2,
+    min: 0,
     idleTimeoutMillis: 100
   })
 
@@ -477,8 +448,10 @@ tap.test('logPassesLogLevel', function (t) {
   var factory = {
     name: 'test1',
     create: function (callback) { callback(null, { id: Math.floor(Math.random() * 1000) }) },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 2,
+    min: 0,
     idleTimeoutMillis: 100,
     log: function (msg, level) { testlog(msg, level) }
   }
@@ -491,8 +464,10 @@ tap.test('logPassesLogLevel', function (t) {
   var pool2 = Pool({
     name: 'testNoLog',
     create: function (callback) { callback(null, { id: Math.floor(Math.random() * 1000) }) },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 2,
+    min: 0,
     idleTimeoutMillis: 100
   })
   t.equal(pool2.getName(), 'testNoLog')
@@ -511,7 +486,9 @@ tap.test('removes from available objects on destroy', function (t) {
     name: 'test',
     create: function (callback) { callback(null, {}) },
     destroy: function (client) { destroyCalled = true },
+    validate: () => {},
     max: 2,
+    min: 0,
     idleTimeoutMillis: 100
   }
 
@@ -537,6 +514,7 @@ tap.test('removes from available objects on validation failure', function (t) {
     destroy: function (client) { destroyCalled = client.count },
     validate: function (client) { validateCalled = true; return client.count > 0 },
     max: 2,
+    min: 0,
     idleTimeoutMillis: 100
   }
 
@@ -570,6 +548,7 @@ tap.test('removes from available objects on async validation failure', function 
     destroy: function (client) { destroyCalled = client.count },
     validateAsync: function (client, callback) { validateCalled = true; callback(client.count > 0 ? new Error() : null) },
     max: 2,
+    min: 0,
     idleTimeoutMillis: 100
   }
 
@@ -593,21 +572,7 @@ tap.test('removes from available objects on async validation failure', function 
   }, 50)
 })
 
-tap.test('error on setting both validate functions', function (t) {
-  var noop = function () {}
-  var factory = {
-    name: 'test',
-    create: noop,
-    destroy: noop,
-    validate: noop,
-    validateAsync: noop
-  }
-
-  t.throws(function () { Pool(factory) }, 'Only one of validate or validateAsync may be specified')
-  t.end()
-})
-
-tap.test('do schedule again if error occured when creating new Objects async', function (t) {
+tap.test('do schedule again if error occurred when creating new Objects async', function (t) {
   // NOTE: we're simulating the first few resource attempts failing
   var resourceCreationAttempts = 0
 
@@ -622,8 +587,10 @@ tap.test('do schedule again if error occured when creating new Objects async', f
         callback(null, {})
       }, 1)
     },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 1,
+    min: 0,
     refreshIdle: false
   }
 
@@ -644,8 +611,10 @@ tap.test('returns only valid object to the pool', function (t) {
         callback(null, { id: 'validId' })
       })
     },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => {},
     max: 1,
+    min: 0,
     idleTimeoutMillis: 100
   })
 
@@ -675,11 +644,10 @@ tap.test('validate acquires object from the pool', function (t) {
         callback(null, { id: 'validId' })
       })
     },
-    validate: function (resource) {
-      return true
-    },
-    destroy: function (client) {},
+    destroy: () => {},
+    validate: () => { return true },
     max: 1,
+    min: 0,
     idleTimeoutMillis: 100
   })
 
@@ -704,6 +672,7 @@ tap.test('validateAsync acquires object from the pool', function (t) {
     },
     destroy: function (client) {},
     max: 1,
+    min: 0,
     idleTimeoutMillis: 100
   })
 
@@ -730,8 +699,10 @@ tap.test('async destroy', function (t) {
         cb()
       }, 250)
     },
+    validate: () => true,
     max: 2,
-    idletimeoutMillis: 300000
+    min: 0,
+    idleTimeoutMillis: 300000
   })
 
   for (var i = 0; i < count; i++) {
@@ -769,8 +740,10 @@ tap.test('async destroy - no breaking change', function (t) {
     destroy: function (client) {
       destroyed += 1
     },
+    validate: () => true,
     max: max,
-    idletimeoutMillis: 300000
+    min: 0,
+    idleTimeoutMillis: 300000
   })
 
   for (var i = 0; i < count; i++) {

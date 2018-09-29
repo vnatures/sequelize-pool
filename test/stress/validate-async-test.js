@@ -1,6 +1,5 @@
 var tap = require('tap')
-
-var poolModule = require('..')
+var poolModule = require('../..')
 
 tap.test('validateAsync multiple calls', function (t) {
   var createCount = 0
@@ -22,6 +21,7 @@ tap.test('validateAsync multiple calls', function (t) {
     },
     destroy: function (client) {},
     max: 3,
+    min: 0,
     idleTimeoutMillis: 100,
     log: false
   })
