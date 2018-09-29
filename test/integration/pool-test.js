@@ -20,7 +20,7 @@ tap.test("Pool expands only to max limit", function(t) {
 
   // NOTES:
   // - request a resource
-  // - once we have it, request another and check the pool is fool
+  // - once we have it, request another and check the pool is full
   pool.acquire(function(err, obj) {
     t.error(err);
     var poolIsFull = !pool.acquire(function(err, obj) {
@@ -49,8 +49,6 @@ tap.test("Pool respects min limit", function(t) {
     refreshIdle: false
   });
 
-  // FIXME: this logic only works because we know it takes ~1ms to create a resource
-  // we need better hooks into the pool probably to observe this...
   setTimeout(function() {
     t.equal(resourceFactory.created, 1);
     utils.stopPool(pool);
@@ -78,6 +76,7 @@ tap.test("removes correct object on reap", function(t) {
       pool.destroy(client);
     }, 5);
   });
+
   pool.acquire(function(err, client) {
     t.error(err);
     // should be removed first
@@ -122,7 +121,7 @@ tap.test("tests drain", function(t) {
   t.notEqual(count, acquired);
   pool.drain(function() {
     t.equal(count, acquired);
-    // short circuit the absurdly long timeouts above.
+    // short circuit the absurdly long timeout above.
     pool.destroyAllNow();
     t.end();
   });
@@ -136,7 +135,7 @@ tap.test("tests drain", function(t) {
 tap.test("handle creation errors", function(t) {
   var created = 0;
   var pool = Pool({
-    name: "test6",
+    name: "test5",
     create: function(callback) {
       if (created < 5) {
         callback(new Error("Error occurred."));
@@ -230,7 +229,7 @@ tap.test("pooled decorator should acquire and release", function(t) {
   // FIXME: assertion count should probably be replaced with t.plan?
   var assertionCount = 0;
   var pool = Pool({
-    name: "test1",
+    name: "test7",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
     },
@@ -274,7 +273,7 @@ tap.test("pooled decorator should pass arguments and return values", function(
   // FIXME: assertion count should probably be replaced with t.plan?
   var assertionCount = 0;
   var pool = Pool({
-    name: "test1",
+    name: "test8",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
     },
@@ -315,7 +314,7 @@ tap.test("pooled decorator should pass arguments and return values", function(
 tap.test("pooled decorator should allow undefined callback", function(t) {
   var assertionCount = 0;
   var pool = Pool({
-    name: "test1",
+    name: "test9",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
     },
@@ -373,7 +372,7 @@ tap.test("pooled decorator should allow undefined callback", function(t) {
 tap.test("getPoolSize", function(t) {
   var assertionCount = 0;
   var pool = Pool({
-    name: "test1",
+    name: "test10",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
     },
@@ -423,7 +422,7 @@ tap.test("getPoolSize", function(t) {
 tap.test("availableObjectsCount", function(t) {
   var assertionCount = 0;
   var pool = Pool({
-    name: "test1",
+    name: "test11",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
     },
@@ -482,7 +481,7 @@ tap.test("logPassesLogLevel", function(t) {
   var loglevels = { verbose: 0, info: 1, warn: 2, error: 3 };
   var logmessages = { verbose: [], info: [], warn: [], error: [] };
   var factory = {
-    name: "test1",
+    name: "test12",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
     },
@@ -528,7 +527,7 @@ tap.test("logPassesLogLevel", function(t) {
 tap.test("removes from available objects on destroy", function(t) {
   var destroyCalled = false;
   var factory = {
-    name: "test",
+    name: "test13",
     create: function(callback) {
       callback(null, {});
     },
@@ -558,7 +557,7 @@ tap.test("removes from available objects on validation failure", function(t) {
   var validateCalled = false;
   var count = 0;
   var factory = {
-    name: "test",
+    name: "test14",
     create: function(callback) {
       callback(null, { count: count++ });
     },
@@ -601,7 +600,7 @@ tap.test("removes from available objects on async validation failure", function(
   var validateCalled = false;
   var count = 0;
   var factory = {
-    name: "test",
+    name: "test15",
     create: function(callback) {
       callback(null, { count: count++ });
     },
@@ -644,7 +643,7 @@ tap.test(
     var resourceCreationAttempts = 0;
 
     var factory = {
-      name: "test",
+      name: "test16",
       create: function(callback) {
         setTimeout(function() {
           resourceCreationAttempts++;
@@ -673,7 +672,7 @@ tap.test(
 
 tap.test("returns only valid object to the pool", function(t) {
   var pool = Pool({
-    name: "test",
+    name: "test17",
     create: function(callback) {
       process.nextTick(function() {
         callback(null, { id: "validId" });
@@ -706,7 +705,7 @@ tap.test("returns only valid object to the pool", function(t) {
 
 tap.test("validate acquires object from the pool", function(t) {
   var pool = Pool({
-    name: "test",
+    name: "test18",
     create: function(callback) {
       process.nextTick(function() {
         callback(null, { id: "validId" });
@@ -731,7 +730,7 @@ tap.test("validate acquires object from the pool", function(t) {
 
 tap.test("validateAsync acquires object from the pool", function(t) {
   var pool = Pool({
-    name: "test",
+    name: "test19",
     create: function(callback) {
       process.nextTick(function() {
         callback(null, { id: "validId" });
@@ -761,7 +760,7 @@ tap.test("async destroy", function(t) {
   var acquired = 0;
 
   var pool = Pool({
-    name: "test4",
+    name: "test20",
     create: function(callback) {
       callback(null, { id: ++created });
     },
@@ -809,7 +808,7 @@ tap.test("async destroy - no breaking change", function(t) {
   var acquired = 0;
 
   var pool = Pool({
-    name: "test4",
+    name: "test21",
     create: function(callback) {
       callback(null, { id: ++created });
     },
