@@ -501,15 +501,7 @@ tap.test('logPassesLogLevel', function (t) {
     t.error(err)
     t.equal(logmessages.verbose[0], 'createResource() - creating obj - count=1 min=0 max=2')
     t.equal(logmessages.info[0], 'dispense() clients=1 available=0')
-    logmessages.info = []
-    logmessages.verbose = []
-    pool2.borrow(function (err, obj) {
-      t.error(err)
-      t.equal(logmessages.info.length, 0)
-      t.equal(logmessages.verbose.length, 0)
-      t.equal(logmessages.warn.length, 0)
-      t.end()
-    })
+    t.end()
   })
 })
 
