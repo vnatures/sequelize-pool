@@ -146,7 +146,7 @@ tap.test('tests drain', function (t) {
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
     max: 2,
-    idletimeoutMillis: 300000
+    idleTimeoutMillis: 300000
   })
 
   // request 5 resources that release after 250ms
@@ -209,7 +209,7 @@ tap.test('handle creation errors', function (t) {
     called = true
   })
 
-  // FIXME: arbitary timeout
+  // FIXME: arbitrary timeout
   setTimeout(function () {
     t.ok(called)
     t.equal(pool.waitingClientsCount(), 0)
