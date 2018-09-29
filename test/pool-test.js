@@ -1,5 +1,5 @@
 var tap = require('tap')
-var Pool = require('../lib/generic-pool').Pool
+var Pool = require('..').Pool
 var utils = require('./utils')
 var ResourceFactory = utils.ResourceFactory
 
@@ -104,54 +104,6 @@ tap.test('min greater than max sets to max minus one', function (t) {
   t.equal(2, pool.getMinPoolSize())
   utils.stopPool(pool)
   t.end()
-})
-
-tap.test('supports priority on borrow', function (t) {
-  // NOTE: this test is pretty opaque about what it's really testing/expecting...
-  var borrowTimeLow = 0
-  var borrowTimeHigh = 0
-  var borrowCount = 0
-  var i
-
-  var resourceFactory = new ResourceFactory()
-
-  var pool = Pool({
-    name: 'test2',
-    create: resourceFactory.create.bind(resourceFactory),
-    destroy: resourceFactory.destroy.bind(resourceFactory),
-    max: 1,
-    refreshIdle: false,
-    priorityRange: 2
-  })
-
-  for (i = 0; i < 10; i++) {
-    pool.acquire(function (err, obj) {
-      t.error(err)
-      var time = Date.now()
-      if (time > borrowTimeLow) { borrowTimeLow = time }
-      borrowCount++
-      pool.release(obj)
-    }, 1)
-  }
-
-  for (i = 0; i < 10; i++) {
-    pool.acquire(function (err, obj) {
-      t.error(err)
-      var time = Date.now()
-      if (time > borrowTimeHigh) { borrowTimeHigh = time }
-      borrowCount++
-      pool.release(obj)
-    }, 0)
-  }
-
-    // FIXME: another terrible set timeout hack to make the test pass
-    // we should wait till all 20 resources are returned/destroyed
-  setTimeout(function () {
-    t.equal(20, borrowCount)
-    t.equal(true, borrowTimeLow > borrowTimeHigh)
-    utils.stopPool(pool)
-    t.end()
-  }, 200)
 })
 
 tap.test('removes correct object on reap', function (t) {
