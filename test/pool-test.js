@@ -357,31 +357,31 @@ tap.test('pooled decorator should allow undefined callback', function (t) {
 
 // FIXME: this test needs fixing since we no longer bubble up factory errors
 // only thing like resourceRequest timeouts etc
-tap.test('pooled decorator should forward pool errors', function (t) {
-  var assertionCount = 0
-  var pool = Pool({
-    name: 'test1',
-    create: function (callback) { callback(new Error('Pool error')) },
-    destroy: function (client) {},
-    max: 1,
-    idleTimeoutMillis: 100
-  })
+// tap.test('pooled decorator should forward pool errors', function (t) {
+//   var assertionCount = 0
+//   var pool = Pool({
+//     name: 'test1',
+//     create: function (callback) { callback(new Error('Pool error')) },
+//     destroy: function (client) {},
+//     max: 1,
+//     idleTimeoutMillis: 100
+//   })
 
-  var pooledFn = pool.pooled(function (cb) {
-    t.ok(false, "Pooled function shouldn't be called due to a pool error")
-  })
+//   var pooledFn = pool.pooled(function (cb) {
+//     t.ok(false, "Pooled function shouldn't be called due to a pool error")
+//   })
 
-  pooledFn(function (err, obj) {
-    t.equal(err.message, 'Pool error')
-    assertionCount += 1
-  })
+//   pooledFn(function (err, obj) {
+//     t.equal(err.message, 'Pool error')
+//     assertionCount += 1
+//   })
 
-  setTimeout(function () {
-    // FIXME: re-enable this test when we fix it
-    // t.equal(assertionCount, 1)
-    t.end()
-  }, 20)
-})
+//   setTimeout(function () {
+//     // FIXME: re-enable this test when we fix it
+//     // t.equal(assertionCount, 1)
+//     t.end()
+//   }, 20)
+// })
 
 tap.test('getPoolSize', function (t) {
   var assertionCount = 0
