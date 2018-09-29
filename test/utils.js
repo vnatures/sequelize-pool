@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Generic class for handling creation of resources
  * for testing
@@ -23,7 +25,7 @@ class ResourceFactory {
     this.bin.push(resource);
   }
 
-  validate(resource) {
+  validate() {
     return true;
   }
 }

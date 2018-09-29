@@ -1,3 +1,5 @@
+"use strict";
+
 var tap = require("tap");
 var poolModule = require("../..");
 
@@ -19,7 +21,7 @@ tap.test("validateAsync multiple calls", function(t) {
         callback(new Error("invalid resource"));
       }, 100);
     },
-    destroy: function(client) {},
+    destroy: function() {},
     max: 3,
     min: 0,
     idleTimeoutMillis: 100,

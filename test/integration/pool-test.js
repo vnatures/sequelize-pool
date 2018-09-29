@@ -1,3 +1,5 @@
+"use strict";
+
 var tap = require("tap");
 var Pool = require("../..").Pool;
 var utils = require("../utils");
@@ -128,7 +130,7 @@ tap.test("tests drain", function(t) {
 
   // subsequent calls to acquire should return an error.
   t.throws(function() {
-    pool.acquire(function(client) {});
+    pool.acquire(function() {});
   }, Error);
 });
 
@@ -224,150 +226,6 @@ tap.test("handle creation errors for delayed creates", function(t) {
     t.end();
   }, 50);
 });
-
-tap.test("pooled decorator should acquire and release", function(t) {
-  // FIXME: assertion count should probably be replaced with t.plan?
-  var assertionCount = 0;
-  var pool = Pool({
-    name: "test7",
-    create: function(callback) {
-      callback(null, { id: Math.floor(Math.random() * 1000) });
-    },
-    destroy: () => {},
-    validate: () => {},
-    max: 1,
-    min: 0,
-    refreshIdle: false
-  });
-
-  var pooledFn = pool.pooled(function(client, cb) {
-    t.equal(typeof client.id, "number");
-    t.equal(pool.getPoolSize(), 1);
-    assertionCount += 2;
-    cb();
-  });
-
-  t.equal(pool.getPoolSize(), 0);
-  assertionCount += 1;
-
-  pooledFn(function(err) {
-    // FIXME: what is even happening in this block?
-    if (err) {
-      throw err;
-    }
-    t.ok(true);
-    assertionCount += 1;
-  });
-
-  setTimeout(function() {
-    t.equal(assertionCount, 4);
-    t.equal(pool.availableObjectsCount(), 1);
-    utils.stopPool(pool);
-    t.end();
-  }, 10);
-});
-
-tap.test("pooled decorator should pass arguments and return values", function(
-  t
-) {
-  // FIXME: assertion count should probably be replaced with t.plan?
-  var assertionCount = 0;
-  var pool = Pool({
-    name: "test8",
-    create: function(callback) {
-      callback(null, { id: Math.floor(Math.random() * 1000) });
-    },
-    destroy: () => {},
-    validate: () => {},
-    max: 1,
-    min: 0,
-    idleTimeoutMillis: 100
-  });
-
-  var pooledFn = pool.pooled(function(client, arg1, arg2, cb) {
-    t.equal(arg1, "First argument");
-    t.equal(arg2, "Second argument");
-    assertionCount += 2;
-    cb(null, "First return", "Second return");
-  });
-
-  pooledFn("First argument", "Second argument", function(
-    err,
-    retVal1,
-    retVal2
-  ) {
-    if (err) {
-      throw err;
-    }
-    t.equal(retVal1, "First return");
-    t.equal(retVal2, "Second return");
-    assertionCount += 2;
-  });
-
-  setTimeout(function() {
-    t.equal(assertionCount, 4);
-    t.end();
-  }, 20);
-});
-
-// FIXME:  I'm not really sure what this testing...
-tap.test("pooled decorator should allow undefined callback", function(t) {
-  var assertionCount = 0;
-  var pool = Pool({
-    name: "test9",
-    create: function(callback) {
-      callback(null, { id: Math.floor(Math.random() * 1000) });
-    },
-    destroy: () => {},
-    validate: () => {},
-    max: 1,
-    min: 0,
-    idleTimeoutMillis: 100
-  });
-
-  var pooledFn = pool.pooled(function(client, arg, cb) {
-    t.equal(arg, "Arg!");
-    assertionCount += 1;
-    cb();
-  });
-
-  pooledFn("Arg!");
-
-  setTimeout(function() {
-    t.equal(pool.getPoolSize(), 1);
-    t.equal(assertionCount, 1);
-    t.end();
-  }, 20);
-});
-
-// FIXME: this test needs fixing since we no longer bubble up factory errors
-// only thing like resourceRequest timeouts etc
-// tap.test('pooled decorator should forward pool errors', function (t) {
-//   var assertionCount = 0
-//   var pool = Pool({
-//     name: 'test1',
-//     create: function (callback) { callback(new Error('Pool error')) },
-//     destroy: () => {},
-//     validate: () => {},
-//     max: 1,
-//     idleTimeoutMillis: 100
-//   })
-
-//   var pooledFn = pool.pooled(function (cb) {
-//     t.ok(false, "Pooled function shouldn't be called due to a pool error")
-//   })
-
-//   pooledFn(function (err, obj) {
-//     t.equal(err.message, 'Pool error')
-//     assertionCount += 1
-//   })
-
-//   setTimeout(function () {
-//     // FIXME: re-enable this test when we fix it
-//     // t.equal(assertionCount, 1)
-//     t.end()
-//   }, 20)
-// })
 
 tap.test("getPoolSize", function(t) {
   var assertionCount = 0;
@@ -513,7 +371,7 @@ tap.test("logPassesLogLevel", function(t) {
   });
   t.equal(pool2.getName(), "testNoLog");
 
-  pool.acquire(function(err, obj) {
+  pool.acquire(function(err) {
     t.error(err);
     t.equal(
       logmessages.verbose[0],
@@ -531,7 +389,7 @@ tap.test("removes from available objects on destroy", function(t) {
     create: function(callback) {
       callback(null, {});
     },
-    destroy: function(client) {
+    destroy: function() {
       destroyCalled = true;
     },
     validate: () => {},
@@ -662,7 +520,7 @@ tap.test(
 
     var pool = Pool(factory);
     pool.acquire(function() {});
-    pool.acquire(function(err, obj) {
+    pool.acquire(function(err) {
       t.error(err);
       t.equal(pool.availableObjectsCount(), 0);
       t.end();
@@ -720,7 +578,7 @@ tap.test("validate acquires object from the pool", function(t) {
     idleTimeoutMillis: 100
   });
 
-  pool.acquire(function(err, obj) {
+  pool.acquire(function(err) {
     t.error(err);
     t.equal(pool.availableObjectsCount(), 0);
     t.equal(pool.inUseObjectsCount(), 1);
@@ -739,109 +597,16 @@ tap.test("validateAsync acquires object from the pool", function(t) {
     validateAsync: function(resource, callback) {
       callback(new Error("Validate"));
     },
-    destroy: function(client) {},
+    destroy: function() {},
     max: 1,
     min: 0,
     idleTimeoutMillis: 100
   });
 
-  pool.acquire(function(err, obj) {
+  pool.acquire(function(err) {
     t.error(err);
     t.equal(pool.availableObjectsCount(), 0);
     t.equal(pool.inUseObjectsCount(), 1);
     t.end();
-  });
-});
-
-tap.test("async destroy", function(t) {
-  var created = 0;
-  var destroyed = 0;
-  var count = 5;
-  var acquired = 0;
-
-  var pool = Pool({
-    name: "test20",
-    create: function(callback) {
-      callback(null, { id: ++created });
-    },
-    destroy: function(client, cb) {
-      setTimeout(function() {
-        destroyed += 1;
-        cb();
-      }, 250);
-    },
-    validate: () => true,
-    max: 2,
-    min: 0,
-    idleTimeoutMillis: 300000
-  });
-
-  for (var i = 0; i < count; i++) {
-    pool.acquire(function(err, client) {
-      t.error(err);
-      acquired += 1;
-      t.equal(typeof client.id, "number");
-      setTimeout(function() {
-        pool.release(client);
-      }, 250);
-    });
-  }
-  t.notEqual(count, acquired);
-  pool.drain(function() {
-    var toDestroy = pool.availableObjectsCount();
-
-    t.equal(count, acquired);
-    // short circuit the absurdly long timeouts above.
-    pool.destroyAllNow(function() {
-      t.equal(toDestroy, destroyed);
-      t.end();
-    });
-    t.equal(destroyed, 0);
-  });
-});
-
-tap.test("async destroy - no breaking change", function(t) {
-  var created = 0;
-  var destroyed = 0;
-  var max = 2;
-  var count = 5;
-  var acquired = 0;
-
-  var pool = Pool({
-    name: "test21",
-    create: function(callback) {
-      callback(null, { id: ++created });
-    },
-    destroy: function(client) {
-      destroyed += 1;
-    },
-    validate: () => true,
-    max: max,
-    min: 0,
-    idleTimeoutMillis: 300000
-  });
-
-  for (var i = 0; i < count; i++) {
-    pool.acquire(function(err, client) {
-      t.error(err);
-      acquired += 1;
-      t.equal(typeof client.id, "number");
-      setTimeout(function() {
-        pool.release(client);
-      }, 250);
-    });
-  }
-
-  t.notEqual(count, acquired);
-
-  pool.drain(function() {
-    var toDestroy = pool.availableObjectsCount();
-    t.equal(count, acquired);
-    // short circuit the absurdly long timeouts above.
-    pool.destroyAllNow(function() {
-      t.equal(toDestroy, destroyed);
-      t.end();
-    });
-    t.equal(toDestroy, destroyed);
   });
 });
