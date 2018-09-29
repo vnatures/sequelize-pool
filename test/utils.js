@@ -3,32 +3,32 @@
  * for testing
  */
 class ResourceFactory {
-  constructor () {
-    this.created = 0
-    this.destroyed = 0
-    this.bin = []
+  constructor() {
+    this.created = 0;
+    this.destroyed = 0;
+    this.bin = [];
   }
 
-  create (callback) {
+  create(callback) {
     var resource = {
       id: this.created++
-    }
-    setTimeout(function () {
-      callback(resource)
-    }, 1)
+    };
+    setTimeout(function() {
+      callback(resource);
+    }, 1);
   }
 
-  destroy (resource) {
-    this.destroyed++
-    this.bin.push(resource)
+  destroy(resource) {
+    this.destroyed++;
+    this.bin.push(resource);
   }
 
-  validate (resource) {
-    return true
+  validate(resource) {
+    return true;
   }
 }
 
-exports.ResourceFactory = ResourceFactory
+exports.ResourceFactory = ResourceFactory;
 
 /**
  * drains and terminates the pool
@@ -36,8 +36,8 @@ exports.ResourceFactory = ResourceFactory
  * @param  {[type]} pool [description]
  * @return {[type]}      [description]
  */
-exports.stopPool = function (pool) {
-  pool.drain(function () {
-    pool.destroyAllNow()
-  })
-}
+exports.stopPool = function(pool) {
+  pool.drain(function() {
+    pool.destroyAllNow();
+  });
+};
