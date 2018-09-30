@@ -5,7 +5,7 @@ var Pool = require("../..").Pool;
 var utils = require("../utils");
 var ResourceFactory = utils.ResourceFactory;
 
-tap.test("Pool expands only to max limit", function(t) {
+tap.test("pool expands only to max limit", function(t) {
   var resourceFactory = new ResourceFactory();
 
   var factory = {
@@ -36,26 +36,6 @@ tap.test("Pool expands only to max limit", function(t) {
     t.equal(1, resourceFactory.created);
     pool.release(obj);
   });
-});
-
-tap.test("Pool respects min limit", function(t) {
-  var resourceFactory = new ResourceFactory();
-
-  var pool = new Pool({
-    name: "test-min",
-    create: resourceFactory.create.bind(resourceFactory),
-    destroy: resourceFactory.destroy.bind(resourceFactory),
-    validate: resourceFactory.validate.bind(resourceFactory),
-    min: 1,
-    max: 2,
-    refreshIdle: false
-  });
-
-  setTimeout(function() {
-    t.equal(resourceFactory.created, 1);
-    utils.stopPool(pool);
-    t.end();
-  }, 10);
 });
 
 tap.test("removes correct object on reap", function(t) {
@@ -394,7 +374,9 @@ tap.test("validateAsync acquires object from the pool", function(t) {
       });
     },
     validateAsync: function(resource, callback) {
-      callback(new Error("Validate"));
+      setTimeout(() => {
+        callback(new Error("Validate"));
+      }, 1);
     },
     destroy: function() {},
     max: 1,
