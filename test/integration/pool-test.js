@@ -14,8 +14,7 @@ tap.test("pool expands only to max limit", function(t) {
     destroy: resourceFactory.destroy.bind(resourceFactory),
     validate: resourceFactory.validate.bind(resourceFactory),
     max: 1,
-    min: 0,
-    refreshIdle: false
+    min: 0
   };
 
   var pool = new Pool(factory);
@@ -47,8 +46,7 @@ tap.test("removes correct object on reap", function(t) {
     destroy: resourceFactory.destroy.bind(resourceFactory),
     validate: resourceFactory.validate.bind(resourceFactory),
     max: 2,
-    min: 0,
-    refreshIdle: false
+    min: 0
   });
 
   pool.acquire(function(err, client) {
@@ -250,8 +248,7 @@ tap.test(
       destroy: () => {},
       validate: () => {},
       max: 1,
-      min: 0,
-      refreshIdle: false
+      min: 0
     };
 
     var pool = new Pool(factory);
