@@ -18,7 +18,7 @@ tap.test("Pool expands only to max limit", function(t) {
     refreshIdle: false
   };
 
-  var pool = Pool(factory);
+  var pool = new Pool(factory);
 
   // NOTES:
   // - request a resource
@@ -41,7 +41,7 @@ tap.test("Pool expands only to max limit", function(t) {
 tap.test("Pool respects min limit", function(t) {
   var resourceFactory = new ResourceFactory();
 
-  var pool = Pool({
+  var pool = new Pool({
     name: "test-min",
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
@@ -61,7 +61,7 @@ tap.test("Pool respects min limit", function(t) {
 tap.test("removes correct object on reap", function(t) {
   var resourceFactory = new ResourceFactory();
 
-  var pool = Pool({
+  var pool = new Pool({
     name: "test3",
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
@@ -98,7 +98,7 @@ tap.test("tests drain", function(t) {
 
   var resourceFactory = new ResourceFactory();
 
-  var pool = Pool({
+  var pool = new Pool({
     name: "test4",
     create: resourceFactory.create.bind(resourceFactory),
     destroy: resourceFactory.destroy.bind(resourceFactory),
@@ -136,7 +136,7 @@ tap.test("tests drain", function(t) {
 
 tap.test("handle creation errors", function(t) {
   var created = 0;
-  var pool = Pool({
+  var pool = new Pool({
     name: "test5",
     create: function(callback) {
       if (created < 5) {
@@ -161,6 +161,7 @@ tap.test("handle creation errors", function(t) {
   for (var i = 0; i < 5; i++) {
     pool.acquire(function(err, client) {
       t.ok(err instanceof Error);
+      t.ok(err.message === "Error occurred.");
       t.ok(client === null);
     });
   }
@@ -171,8 +172,6 @@ tap.test("handle creation errors", function(t) {
     t.equal(typeof client.id, "number");
     called = true;
   });
-
-  // FIXME: arbitrary timeout
   setTimeout(function() {
     t.ok(called);
     t.equal(pool.waitingClientsCount(), 0);
@@ -182,7 +181,7 @@ tap.test("handle creation errors", function(t) {
 
 tap.test("handle creation errors for delayed creates", function(t) {
   var created = 0;
-  var pool = Pool({
+  var pool = new Pool({
     name: "test6",
     create: function(callback) {
       if (created < 5) {
@@ -211,6 +210,7 @@ tap.test("handle creation errors for delayed creates", function(t) {
   for (var i = 0; i < 5; i++) {
     pool.acquire(function(err, client) {
       t.ok(err instanceof Error);
+      t.ok(err.message === "Error occurred.");
       t.ok(client === null);
     });
   }
@@ -229,7 +229,7 @@ tap.test("handle creation errors for delayed creates", function(t) {
 
 tap.test("getPoolSize", function(t) {
   var assertionCount = 0;
-  var pool = Pool({
+  var pool = new Pool({
     name: "test10",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
@@ -279,7 +279,7 @@ tap.test("getPoolSize", function(t) {
 
 tap.test("availableObjectsCount", function(t) {
   var assertionCount = 0;
-  var pool = Pool({
+  var pool = new Pool({
     name: "test11",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
@@ -356,9 +356,9 @@ tap.test("logPassesLogLevel", function(t) {
     t.ok(level in loglevels);
     logmessages[level].push(msg);
   };
-  var pool = Pool(factory);
+  var pool = new Pool(factory);
 
-  var pool2 = Pool({
+  var pool2 = new Pool({
     name: "testNoLog",
     create: function(callback) {
       callback(null, { id: Math.floor(Math.random() * 1000) });
@@ -398,7 +398,7 @@ tap.test("removes from available objects on destroy", function(t) {
     idleTimeoutMillis: 100
   };
 
-  var pool = Pool(factory);
+  var pool = new Pool(factory);
   pool.acquire(function(err, obj) {
     t.error(err);
     pool.destroy(obj);
@@ -431,7 +431,7 @@ tap.test("removes from available objects on validation failure", function(t) {
     idleTimeoutMillis: 100
   };
 
-  var pool = Pool(factory);
+  var pool = new Pool(factory);
   pool.acquire(function(err, obj) {
     t.error(err);
     pool.release(obj);
@@ -474,7 +474,7 @@ tap.test("removes from available objects on async validation failure", function(
     idleTimeoutMillis: 100
   };
 
-  var pool = Pool(factory);
+  var pool = new Pool(factory);
   pool.acquire(function(err, obj) {
     t.error(err);
     pool.release(obj);
@@ -518,7 +518,7 @@ tap.test(
       refreshIdle: false
     };
 
-    var pool = Pool(factory);
+    var pool = new Pool(factory);
     pool.acquire(function() {});
     pool.acquire(function(err) {
       t.error(err);
@@ -529,7 +529,7 @@ tap.test(
 );
 
 tap.test("returns only valid object to the pool", function(t) {
-  var pool = Pool({
+  var pool = new Pool({
     name: "test17",
     create: function(callback) {
       process.nextTick(function() {
@@ -562,7 +562,7 @@ tap.test("returns only valid object to the pool", function(t) {
 });
 
 tap.test("validate acquires object from the pool", function(t) {
-  var pool = Pool({
+  var pool = new Pool({
     name: "test18",
     create: function(callback) {
       process.nextTick(function() {
@@ -587,7 +587,7 @@ tap.test("validate acquires object from the pool", function(t) {
 });
 
 tap.test("validateAsync acquires object from the pool", function(t) {
-  var pool = Pool({
+  var pool = new Pool({
     name: "test19",
     create: function(callback) {
       process.nextTick(function() {

@@ -14,7 +14,7 @@ tap.test("fail for max < min", function(t) {
   };
 
   t.throws(() => {
-    Pool(factory);
+    new Pool(factory);
   }, "max is smaller than min");
   t.end();
 });
@@ -29,7 +29,7 @@ tap.test("fail without factory.create", function(t) {
   };
 
   t.throws(() => {
-    Pool(factory);
+    new Pool(factory);
   }, "create function is required");
   t.end();
 });
@@ -44,7 +44,7 @@ tap.test("fail without factory.destroy", function(t) {
   };
 
   t.throws(() => {
-    Pool(factory);
+    new Pool(factory);
   }, "destroy function is required");
   t.end();
 });
@@ -59,7 +59,7 @@ tap.test("fail without factory.validate or factory.validateAsync", function(t) {
   };
 
   t.throws(() => {
-    Pool(factory);
+    new Pool(factory);
   }, "Neither validate or validateAsync was specified");
   t.end();
 });
@@ -78,7 +78,7 @@ tap.test("fail with both factory.validate or factory.validateAsync", function(
   };
 
   t.throws(() => {
-    Pool(factory);
+    new Pool(factory);
   }, "Only one of validate or validateAsync may be specified");
   t.end();
 });

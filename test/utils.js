@@ -16,7 +16,7 @@ class ResourceFactory {
       id: this.created++
     };
     setTimeout(function() {
-      callback(resource);
+      callback(null, resource);
     }, 1);
   }
 

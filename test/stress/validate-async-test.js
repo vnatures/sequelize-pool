@@ -1,12 +1,12 @@
 "use strict";
 
 var tap = require("tap");
-var poolModule = require("../..");
+var Pool = require("../..").Pool;
 
 tap.test("validateAsync multiple calls", function(t) {
   var createCount = 0;
 
-  var pool = poolModule.Pool({
+  var pool = new Pool({
     name: "test",
     create: function(callback) {
       setTimeout(function() {
