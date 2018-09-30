@@ -49,7 +49,7 @@ tap.test("fail without factory.destroy", function(t) {
   t.end();
 });
 
-tap.test("fail without factory.validate or factory.validateAsync", function(t) {
+tap.test("fail without factory.validate", function(t) {
   var factory = {
     name: "test-config",
     create: () => {},
@@ -60,25 +60,6 @@ tap.test("fail without factory.validate or factory.validateAsync", function(t) {
 
   t.throws(() => {
     new Pool(factory);
-  }, "Neither validate or validateAsync was specified");
-  t.end();
-});
-
-tap.test("fail with both factory.validate or factory.validateAsync", function(
-  t
-) {
-  var factory = {
-    name: "test-config",
-    create: () => {},
-    destroy: () => {},
-    validate: () => {},
-    validateAsync: () => {},
-    max: 1,
-    min: 0
-  };
-
-  t.throws(() => {
-    new Pool(factory);
-  }, "Only one of validate or validateAsync may be specified");
+  }, "validate function is required");
   t.end();
 });

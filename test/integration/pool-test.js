@@ -230,49 +230,6 @@ tap.test("removes from available objects on validation failure", function(t) {
   }, 20);
 });
 
-tap.test("removes from available objects on async validation failure", function(
-  t
-) {
-  var destroyCalled = false;
-  var validateCalled = false;
-  var count = 0;
-  var factory = {
-    name: "test15",
-    create: function(callback) {
-      callback(null, { count: count++ });
-    },
-    destroy: function(client) {
-      destroyCalled = client.count;
-    },
-    validateAsync: function(client, callback) {
-      validateCalled = true;
-      callback(client.count > 0 ? new Error() : null);
-    },
-    max: 2,
-    min: 0,
-    idleTimeoutMillis: 100
-  };
-
-  var pool = new Pool(factory);
-  pool.acquire(function(err, obj) {
-    t.error(err);
-    pool.release(obj);
-    t.equal(obj.count, 0);
-
-    pool.acquire(function(err, obj) {
-      t.error(err);
-      pool.release(obj);
-      t.equal(obj.count, 1);
-    });
-  });
-  setTimeout(function() {
-    t.equal(validateCalled, true);
-    t.equal(destroyCalled, 0);
-    t.equal(pool.available, 1);
-    t.end();
-  }, 50);
-});
-
 tap.test(
   "do schedule again if error occurred when creating new objects async",
   function(t) {
@@ -352,33 +309,6 @@ tap.test("validate acquires object from the pool", function(t) {
     validate: () => {
       return true;
     },
-    max: 1,
-    min: 0,
-    idleTimeoutMillis: 100
-  });
-
-  pool.acquire(function(err) {
-    t.error(err);
-    t.equal(pool.available, 0);
-    t.equal(pool.using, 1);
-    t.end();
-  });
-});
-
-tap.test("validateAsync acquires object from the pool", function(t) {
-  var pool = new Pool({
-    name: "test19",
-    create: function(callback) {
-      process.nextTick(function() {
-        callback(null, { id: "validId" });
-      });
-    },
-    validateAsync: function(resource, callback) {
-      setTimeout(() => {
-        callback(new Error("Validate"));
-      }, 1);
-    },
-    destroy: function() {},
     max: 1,
     min: 0,
     idleTimeoutMillis: 100

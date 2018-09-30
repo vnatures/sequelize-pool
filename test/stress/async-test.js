@@ -3,7 +3,7 @@
 var tap = require("tap");
 var Pool = require("../..").Pool;
 
-tap.test("validateAsync multiple calls", function(t) {
+tap.test("async multiple calls", function(t) {
   var createCount = 0;
 
   var pool = new Pool({
@@ -14,14 +14,8 @@ tap.test("validateAsync multiple calls", function(t) {
         callback(null, { id: createCount });
       }, 50);
     },
-    validateAsync: function(resource, callback) {
-      // console.log( "setTimeout Validate object count:", resource.count )
-      setTimeout(function() {
-        // console.log( "Validating object count:", resource.count )
-        callback(new Error("invalid resource"));
-      }, 100);
-    },
-    destroy: function() {},
+    validate: () => true,
+    destroy: () => {},
     max: 3,
     min: 0,
     idleTimeoutMillis: 100,
@@ -40,7 +34,7 @@ tap.test("validateAsync multiple calls", function(t) {
     inUseCount = inUseCount === undefined ? 0 : inUseCount;
     availableCount = availableCount === undefined ? 0 : availableCount;
 
-    // console.log("Request " + num + " - available " + pool.availableObjectsCount())
+    //console.log("Request " + num + " - available " + pool.available);
     pool.acquire(function(err, obj) {
       // check we haven't already borrowed this before:
       t.equal(
@@ -50,7 +44,7 @@ tap.test("validateAsync multiple calls", function(t) {
       );
       borrowedObjects.push(obj);
 
-      // console.log( "Acquire " + num + " - object id:", obj.id )
+      //console.log("Acquire " + num + " - object id:", obj.id);
       t.error(err);
       t.ok(createCount <= 3);
 
@@ -58,7 +52,7 @@ tap.test("validateAsync multiple calls", function(t) {
         var pos = borrowedObjects.indexOf(obj);
         borrowedObjects.splice(pos, 1);
 
-        // console.log( "Release " + num + " - object id:", obj.id )
+        //console.log("Release " + num + " - object id:", obj.id);
         pool.release(obj);
       }, releaseTimeout);
     });
