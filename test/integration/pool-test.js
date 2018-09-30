@@ -134,210 +134,9 @@ tap.test("tests drain", function(t) {
   }, Error);
 });
 
-tap.test("handle creation errors", function(t) {
-  var created = 0;
-  var pool = new Pool({
-    name: "test5",
-    create: function(callback) {
-      if (created < 5) {
-        callback(new Error("Error occurred."));
-      } else {
-        callback(null, { id: created });
-      }
-      created++;
-    },
-    destroy: () => {},
-    validate: () => {},
-    max: 1,
-    min: 0,
-    idleTimeoutMillis: 1000
-  });
-
-  // FIXME: this section no longer proves anything as factory
-  // errors no longer bubble up through the acquire call
-  // we need to make the Pool an Emitter
-
-  // ensure that creation errors do not populate the pool.
-  for (var i = 0; i < 5; i++) {
-    pool.acquire(function(err, client) {
-      t.ok(err instanceof Error);
-      t.ok(err.message === "Error occurred.");
-      t.ok(client === null);
-    });
-  }
-
-  var called = false;
-  pool.acquire(function(err, client) {
-    t.ok(err === null);
-    t.equal(typeof client.id, "number");
-    called = true;
-  });
-  setTimeout(function() {
-    t.ok(called);
-    t.equal(pool.waiting, 0);
-    t.end();
-  }, 50);
-});
-
-tap.test("handle creation errors for delayed creates", function(t) {
-  var created = 0;
-  var pool = new Pool({
-    name: "test6",
-    create: function(callback) {
-      if (created < 5) {
-        setTimeout(function() {
-          callback(new Error("Error occurred."));
-        }, 0);
-      } else {
-        setTimeout(function() {
-          callback(null, { id: created });
-        }, 0);
-      }
-      created++;
-    },
-    destroy: () => {},
-    validate: () => {},
-    max: 1,
-    min: 0,
-    idleTimeoutMillis: 1000
-  });
-
-  // FIXME: this section no longer proves anything as factory
-  // errors no longer bubble up through the acquire call
-  // we need to make the Pool an Emitter
-
-  // ensure that creation errors do not populate the pool.
-  for (var i = 0; i < 5; i++) {
-    pool.acquire(function(err, client) {
-      t.ok(err instanceof Error);
-      t.ok(err.message === "Error occurred.");
-      t.ok(client === null);
-    });
-  }
-  var called = false;
-  pool.acquire(function(err, client) {
-    t.ok(err === null);
-    t.equal(typeof client.id, "number");
-    called = true;
-  });
-  setTimeout(function() {
-    t.ok(called);
-    t.equal(pool.waiting, 0);
-    t.end();
-  }, 50);
-});
-
-tap.test("pool.size", function(t) {
-  var assertionCount = 0;
-  var pool = new Pool({
-    name: "test10",
-    create: function(callback) {
-      callback(null, { id: Math.floor(Math.random() * 1000) });
-    },
-    destroy: () => {},
-    validate: () => true,
-    max: 2,
-    min: 0,
-    idleTimeoutMillis: 100
-  });
-
-  t.equal(pool.size, 0);
-  assertionCount += 1;
-  pool.acquire(function(err, obj1) {
-    if (err) {
-      throw err;
-    }
-    t.equal(pool.size, 1);
-    assertionCount += 1;
-    pool.acquire(function(err, obj2) {
-      if (err) {
-        throw err;
-      }
-      t.equal(pool.size, 2);
-      assertionCount += 1;
-
-      pool.release(obj1);
-      pool.release(obj2);
-
-      pool.acquire(function(err, obj3) {
-        if (err) {
-          throw err;
-        }
-        // should still be 2
-        t.equal(pool.size, 2);
-        assertionCount += 1;
-        pool.release(obj3);
-      });
-    });
-  });
-
-  setTimeout(function() {
-    t.equal(assertionCount, 4);
-    t.end();
-  }, 40);
-});
-
-tap.test("pool.available", function(t) {
-  var assertionCount = 0;
-  var pool = new Pool({
-    name: "test11",
-    create: function(callback) {
-      callback(null, { id: Math.floor(Math.random() * 1000) });
-    },
-    destroy: () => {},
-    validate: () => true,
-    max: 2,
-    min: 0,
-    idleTimeoutMillis: 100
-  });
-
-  t.equal(pool.available, 0);
-  assertionCount += 1;
-  pool.acquire(function(err, obj1) {
-    if (err) {
-      throw err;
-    }
-    t.equal(pool.available, 0);
-    assertionCount += 1;
-
-    pool.acquire(function(err, obj2) {
-      if (err) {
-        throw err;
-      }
-      t.equal(pool.available, 0);
-      assertionCount += 1;
-
-      pool.release(obj1);
-      t.equal(pool.available, 1);
-      assertionCount += 1;
-
-      pool.release(obj2);
-      t.equal(pool.available, 2);
-      assertionCount += 1;
-
-      pool.acquire(function(err, obj3) {
-        if (err) {
-          throw err;
-        }
-        t.equal(pool.available, 1);
-        assertionCount += 1;
-        pool.release(obj3);
-
-        t.equal(pool.available, 2);
-        assertionCount += 1;
-      });
-    });
-  });
-
-  setTimeout(function() {
-    t.equal(assertionCount, 7);
-    t.end();
-  }, 30);
-});
-
 tap.test("logPassesLogLevel", function(t) {
-  var loglevels = { verbose: 0, info: 1, warn: 2, error: 3 };
-  var logmessages = { verbose: [], info: [], warn: [], error: [] };
+  var logLevels = { verbose: 0, info: 1, warn: 2, error: 3 };
+  var logMessages = { verbose: [], info: [], warn: [], error: [] };
   var factory = {
     name: "test12",
     create: function(callback) {
@@ -353,8 +152,8 @@ tap.test("logPassesLogLevel", function(t) {
     }
   };
   var testlog = function(msg, level) {
-    t.ok(level in loglevels);
-    logmessages[level].push(msg);
+    t.ok(level in logLevels);
+    logMessages[level].push(msg);
   };
   var pool = new Pool(factory);
 
@@ -374,10 +173,10 @@ tap.test("logPassesLogLevel", function(t) {
   pool.acquire(function(err) {
     t.error(err);
     t.equal(
-      logmessages.verbose[0],
+      logMessages.verbose[0],
       "createResource() - creating obj - count=1 min=0 max=2"
     );
-    t.equal(logmessages.info[0], "dispense() clients=1 available=0");
+    t.equal(logMessages.info[0], "dispense() clients=1 available=0");
     t.end();
   });
 });
@@ -495,7 +294,7 @@ tap.test("removes from available objects on async validation failure", function(
 });
 
 tap.test(
-  "do schedule again if error occurred when creating new Objects async",
+  "do schedule again if error occurred when creating new objects async",
   function(t) {
     // NOTE: we're simulating the first few resource attempts failing
     var resourceCreationAttempts = 0;
