@@ -1,5 +1,7 @@
 "use strict";
 
+var Promise = require("bluebird");
+
 /**
  * Generic class for handling creation of resources
  * for testing
@@ -11,13 +13,10 @@ class ResourceFactory {
     this.bin = [];
   }
 
-  create(callback) {
-    var resource = {
+  create() {
+    return Promise.delay(1).then(() => ({
       id: this.created++
-    };
-    setTimeout(function() {
-      callback(null, resource);
-    }, 1);
+    }));
   }
 
   destroy(resource) {
@@ -31,15 +30,3 @@ class ResourceFactory {
 }
 
 exports.ResourceFactory = ResourceFactory;
-
-/**
- * drains and terminates the pool
- *
- * @param  {[type]} pool [description]
- * @return {[type]}      [description]
- */
-exports.stopPool = function(pool) {
-  pool.drain(function() {
-    pool.destroyAllNow();
-  });
-};

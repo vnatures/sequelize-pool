@@ -1,6 +1,7 @@
 "use strict";
 
 var tap = require("tap");
+var Promise = require("bluebird");
 var Pool = require("../..").Pool;
 
 tap.test("factory.create", function(t) {
@@ -8,13 +9,12 @@ tap.test("factory.create", function(t) {
     var created = 0;
     var pool = new Pool({
       name: "test-create-errors",
-      create: function(callback) {
-        if (created < 5) {
-          callback(new Error(`Error ${created} occurred.`));
+      create: function() {
+        if (created++ < 5) {
+          return Promise.reject(new Error(`Error ${created} occurred.`));
         } else {
-          callback(null, { id: created });
+          return Promise.resolve({ id: created });
         }
-        created++;
       },
       destroy: () => {},
       validate: () => {},
@@ -23,43 +23,35 @@ tap.test("factory.create", function(t) {
       idleTimeoutMillis: 1000
     });
 
+    const tests = [];
+
     // ensure that creation errors do not populate the pool.
-    for (var i = 0; i < 5; i++) {
-      pool.acquire(function(err, client) {
-        t.ok(err instanceof Error);
-        t.ok(err.message === `Error ${i} occurred.`);
-        t.ok(client === null);
-      });
+    for (var i = 1; i <= 5; i++) {
+      tests.push(t.rejects(pool.acquire(), new Error(`Error ${i} occurred.`)));
     }
 
-    var called = false;
-    pool.acquire(function(err, client) {
-      t.ok(err === null);
-      t.equal(typeof client.id, "number");
-      called = true;
-    });
-    setTimeout(function() {
-      t.ok(called);
-      t.equal(pool.waiting, 0);
-      t.end();
-    }, 50);
+    tests.push(t.resolveMatch(pool.acquire(), { id: 6 }));
+
+    Promise.all(tests)
+      .then(() => {
+        t.equal(pool.waiting, 0);
+        t.end();
+      })
+      .catch(t.threw);
   });
 
   tap.test("handle creation errors from delayed creates", function(t) {
     var created = 0;
     var pool = new Pool({
       name: "test-async-create-errors",
-      create: function(callback) {
-        if (created < 5) {
-          setTimeout(function() {
-            callback(new Error("Error occurred."));
-          }, 10);
+      create: function() {
+        if (created++ < 5) {
+          return Promise.delay(10).then(() =>
+            Promise.reject(new Error("Error occurred."))
+          );
         } else {
-          setTimeout(function() {
-            callback(null, { id: created });
-          }, 10);
+          return Promise.delay(10).then(() => Promise.resolve({ id: created }));
         }
-        created++;
       },
       destroy: () => {},
       validate: () => {},
@@ -72,26 +64,21 @@ tap.test("factory.create", function(t) {
     // errors no longer bubble up through the acquire call
     // we need to make the Pool an Emitter
 
+    const tests = [];
+
     // ensure that creation errors do not populate the pool.
     for (var i = 0; i < 5; i++) {
-      pool.acquire(function(err, client) {
-        t.ok(err instanceof Error);
-        t.ok(err.message === "Error occurred.");
-        t.ok(client === null);
-      });
+      tests.push(t.rejects(pool.acquire(), new Error(`Error occurred.`)));
     }
-    var called = false;
-    pool.acquire(function(err, client) {
-      t.ok(err === null);
-      t.equal(typeof client.id, "number");
-      called = true;
-    });
 
-    setTimeout(function() {
-      t.ok(called);
-      t.equal(pool.waiting, 0);
-      t.end();
-    }, 100);
+    tests.push(t.resolveMatch(pool.acquire(), { id: 6 }));
+
+    Promise.all(tests)
+      .then(() => {
+        t.equal(pool.waiting, 0);
+        t.end();
+      })
+      .catch(t.threw);
   });
 
   t.end();

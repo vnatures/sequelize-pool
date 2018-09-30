@@ -9,12 +9,14 @@
     "throttle",
     "sequelize"
   ],
-  "main": "lib/pool.js",
+  "main": "lib/Pool.js",
   "repository": {
     "type": "git",
     "url": "http://github.com/sushantdhiman/sequelize-pool.git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "bluebird": "^3.5.2"
+  },
   "devDependencies": {
     "eslint": "^5.6.1",
     "eslint-config-prettier": "^3.1.0",
