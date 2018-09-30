@@ -174,7 +174,7 @@ tap.test("handle creation errors", function(t) {
   });
   setTimeout(function() {
     t.ok(called);
-    t.equal(pool.waitingClientsCount(), 0);
+    t.equal(pool.waiting, 0);
     t.end();
   }, 50);
 });
@@ -222,12 +222,12 @@ tap.test("handle creation errors for delayed creates", function(t) {
   });
   setTimeout(function() {
     t.ok(called);
-    t.equal(pool.waitingClientsCount(), 0);
+    t.equal(pool.waiting, 0);
     t.end();
   }, 50);
 });
 
-tap.test("getPoolSize", function(t) {
+tap.test("pool.size", function(t) {
   var assertionCount = 0;
   var pool = new Pool({
     name: "test10",
@@ -241,19 +241,19 @@ tap.test("getPoolSize", function(t) {
     idleTimeoutMillis: 100
   });
 
-  t.equal(pool.getPoolSize(), 0);
+  t.equal(pool.size, 0);
   assertionCount += 1;
   pool.acquire(function(err, obj1) {
     if (err) {
       throw err;
     }
-    t.equal(pool.getPoolSize(), 1);
+    t.equal(pool.size, 1);
     assertionCount += 1;
     pool.acquire(function(err, obj2) {
       if (err) {
         throw err;
       }
-      t.equal(pool.getPoolSize(), 2);
+      t.equal(pool.size, 2);
       assertionCount += 1;
 
       pool.release(obj1);
@@ -264,7 +264,7 @@ tap.test("getPoolSize", function(t) {
           throw err;
         }
         // should still be 2
-        t.equal(pool.getPoolSize(), 2);
+        t.equal(pool.size, 2);
         assertionCount += 1;
         pool.release(obj3);
       });
@@ -277,7 +277,7 @@ tap.test("getPoolSize", function(t) {
   }, 40);
 });
 
-tap.test("availableObjectsCount", function(t) {
+tap.test("pool.available", function(t) {
   var assertionCount = 0;
   var pool = new Pool({
     name: "test11",
@@ -291,39 +291,39 @@ tap.test("availableObjectsCount", function(t) {
     idleTimeoutMillis: 100
   });
 
-  t.equal(pool.availableObjectsCount(), 0);
+  t.equal(pool.available, 0);
   assertionCount += 1;
   pool.acquire(function(err, obj1) {
     if (err) {
       throw err;
     }
-    t.equal(pool.availableObjectsCount(), 0);
+    t.equal(pool.available, 0);
     assertionCount += 1;
 
     pool.acquire(function(err, obj2) {
       if (err) {
         throw err;
       }
-      t.equal(pool.availableObjectsCount(), 0);
+      t.equal(pool.available, 0);
       assertionCount += 1;
 
       pool.release(obj1);
-      t.equal(pool.availableObjectsCount(), 1);
+      t.equal(pool.available, 1);
       assertionCount += 1;
 
       pool.release(obj2);
-      t.equal(pool.availableObjectsCount(), 2);
+      t.equal(pool.available, 2);
       assertionCount += 1;
 
       pool.acquire(function(err, obj3) {
         if (err) {
           throw err;
         }
-        t.equal(pool.availableObjectsCount(), 1);
+        t.equal(pool.available, 1);
         assertionCount += 1;
         pool.release(obj3);
 
-        t.equal(pool.availableObjectsCount(), 2);
+        t.equal(pool.available, 2);
         assertionCount += 1;
       });
     });
@@ -369,7 +369,7 @@ tap.test("logPassesLogLevel", function(t) {
     min: 0,
     idleTimeoutMillis: 100
   });
-  t.equal(pool2.getName(), "testNoLog");
+  t.equal(pool2.name, "testNoLog");
 
   pool.acquire(function(err) {
     t.error(err);
@@ -405,7 +405,7 @@ tap.test("removes from available objects on destroy", function(t) {
   });
   setTimeout(function() {
     t.equal(destroyCalled, true);
-    t.equal(pool.availableObjectsCount(), 0);
+    t.equal(pool.available, 0);
     t.end();
   }, 10);
 });
@@ -446,7 +446,7 @@ tap.test("removes from available objects on validation failure", function(t) {
   setTimeout(function() {
     t.equal(validateCalled, true);
     t.equal(destroyCalled, 0);
-    t.equal(pool.availableObjectsCount(), 1);
+    t.equal(pool.available, 1);
     t.end();
   }, 20);
 });
@@ -489,7 +489,7 @@ tap.test("removes from available objects on async validation failure", function(
   setTimeout(function() {
     t.equal(validateCalled, true);
     t.equal(destroyCalled, 0);
-    t.equal(pool.availableObjectsCount(), 1);
+    t.equal(pool.available, 1);
     t.end();
   }, 50);
 });
@@ -522,7 +522,7 @@ tap.test(
     pool.acquire(function() {});
     pool.acquire(function(err) {
       t.error(err);
-      t.equal(pool.availableObjectsCount(), 0);
+      t.equal(pool.available, 0);
       t.end();
     });
   }
@@ -545,18 +545,18 @@ tap.test("returns only valid object to the pool", function(t) {
 
   pool.acquire(function(err, obj) {
     t.error(err);
-    t.equal(pool.availableObjectsCount(), 0);
-    t.equal(pool.inUseObjectsCount(), 1);
+    t.equal(pool.available, 0);
+    t.equal(pool.using, 1);
 
     // Invalid release
     pool.release({});
-    t.equal(pool.availableObjectsCount(), 0);
-    t.equal(pool.inUseObjectsCount(), 1);
+    t.equal(pool.available, 0);
+    t.equal(pool.using, 1);
 
     // Valid release
     pool.release(obj);
-    t.equal(pool.availableObjectsCount(), 1);
-    t.equal(pool.inUseObjectsCount(), 0);
+    t.equal(pool.available, 1);
+    t.equal(pool.using, 0);
     t.end();
   });
 });
@@ -580,8 +580,8 @@ tap.test("validate acquires object from the pool", function(t) {
 
   pool.acquire(function(err) {
     t.error(err);
-    t.equal(pool.availableObjectsCount(), 0);
-    t.equal(pool.inUseObjectsCount(), 1);
+    t.equal(pool.available, 0);
+    t.equal(pool.using, 1);
     t.end();
   });
 });
@@ -605,8 +605,8 @@ tap.test("validateAsync acquires object from the pool", function(t) {
 
   pool.acquire(function(err) {
     t.error(err);
-    t.equal(pool.availableObjectsCount(), 0);
-    t.equal(pool.inUseObjectsCount(), 1);
+    t.equal(pool.available, 0);
+    t.equal(pool.using, 1);
     t.end();
   });
 });
