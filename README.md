@@ -8,37 +8,39 @@
 
 ## Installation
 
-    $ npm install --save <>
+```bash
+$ npm install --save sequelize-pool
+$ yarn add sequelize-pool
+```
 
 ## Example
 
 ### Step 1 - Create pool using a factory object
 
 ```js
-// Create a MySQL connection pool with
-// a max of 10 connections, a min of 2, and a 30 second max idle time
-var Pool = require('<>').Pool;
-var mysql = require('mysql'); // v2.10.x
+// Create a MySQL connection pool
+var Pool = require('sequelize-pool').Pool;
+var mysql2 = require('mysql2/promise');
 
 var pool = new Pool({
     name     : 'mysql',
-    create   : function(callback) {
-        var c = mysql.createConnection({
-                user: 'scott',
-                password: 'tiger',
-                database:'mydb'
-        })
-
-        // parameter order: err, resource
-        callback(null, c);
+    create   : function() {
+      // return Promise
+      return mysql2.createConnection({
+        user: 'scott',
+        password: 'tiger',
+        database:'mydb'
+      });
     },
     destroy  : function(client) { client.end(); },
     max      : 10,
     // optional. if you set this, make sure to drain() (see step 3)
     min      : 2,
-    // specifies how long a resource can stay idle in pool before being removed
+    // Delay in milliseconds after which available resources in the pool will be destroyed.
     idleTimeoutMillis : 30000,
-     // if true, logs via console.log - can also be a function
+    // Delay in milliseconds after which pending acquire request in the pool will be rejected.
+    acquireTimeoutMillis: 30000,
+     // Function, defaults to console.log
     log : true
 });
 ```
