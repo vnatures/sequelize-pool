@@ -4,7 +4,7 @@
   Resource pool.  Can be used to reuse or throttle expensive resources such as
   database connections.
 
-  This is a fork from [generic-pool](https://github.com/coopernurse/node-pool/tree/v2.5).
+  This is a fork from [generic-pool@v2.5](https://github.com/coopernurse/node-pool/tree/v2.5).
 
 ## Installation
 
@@ -46,19 +46,12 @@ var pool = new Pool({
 ### Step 2 - Use pool in your code to acquire/release resources
 
 ```js
-// acquire connection - callback function is called
-// once a resource becomes available
-pool.acquire(function(err, client) {
-    if (err) {
-        // handle error - this is generally the err from your
-        // factory.create function
-    }
-    else {
-        client.query("select * from foo", [], function() {
-            // return object back to pool
-            pool.release(client);
-        });
-    }
+// acquire connection
+pool.acquire().then(connection => {
+  client.query("select * from foo", [], function() {
+  // return object back to pool
+    pool.release(client);
+  });
 });
 ```
 
@@ -82,9 +75,7 @@ idle resources have timed out.  For example, you can call:
 ```js
 // Only call this once in your application -- at the point you want
 // to shutdown and stop using this pool.
-pool.drain(function() {
-    pool.destroyAllNow();
-});
+pool.drain().then(() => pool.destroyAllNow());
 ```
 
 If you do this, your node process will exit gracefully.
@@ -96,9 +87,7 @@ their timeouts have been reached, you can use `destroyAllNow()` in conjunction
 with `drain()`:
 
 ```js
-pool.drain(function() {
-    pool.destroyAllNow();
-});
+pool.drain().then(() => pool.destroyAllNow());
 ```
 
 One side-effect of calling `drain()` is that subsequent calls to `acquire()`
