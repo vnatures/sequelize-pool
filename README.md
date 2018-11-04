@@ -1,7 +1,7 @@
 
-# About
+# sequelize-pool
 
-  Resource pool.  Can be used to reuse or throttle expensive resources such as
+  Resource pool. Can be used to reuse or throttle expensive resources such as
   database connections.
 
   This is a fork from [generic-pool@v2.5](https://github.com/coopernurse/node-pool/tree/v2.5).
@@ -125,3 +125,7 @@ pool.minSize
 
     $ npm install
     $ npm test
+
+## License
+
+MIT
