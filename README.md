@@ -1,5 +1,7 @@
-
 # sequelize-pool
+
+![npm](https://img.shields.io/npm/v/sequelize-pool.svg?style=flat-square)
+![Travis (.org)](https://img.shields.io/travis/sushantdhiman/sequelize-pool.svg?style=flat-square)
 
   Resource pool. Can be used to reuse or throttle expensive resources such as
   database connections.
@@ -125,7 +127,3 @@ pool.minSize
 
     $ npm install
     $ npm test
-
-## License
-
-MIT
