@@ -1,6 +1,6 @@
 # sequelize-pool
 
-[![npm](https://img.shields.io/npm/v/sequelize-pool.svg?style=flat-square)](https://www.npmjs.com/package/sequelize)
+[![npm](https://img.shields.io/npm/v/sequelize-pool.svg?style=flat-square)](https://www.npmjs.com/package/sequelize-pool)
 [![Travis (.org)](https://img.shields.io/travis/sushantdhiman/sequelize-pool.svg?style=flat-square)](https://travis-ci.org/sushantdhiman/sequelize-pool)
 
 
