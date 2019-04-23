@@ -1,7 +1,7 @@
 # sequelize-pool
 
 [![npm](https://img.shields.io/npm/v/sequelize-pool.svg?style=flat-square)](https://www.npmjs.com/package/sequelize-pool)
-[![Travis (.org)](https://img.shields.io/travis/sushantdhiman/sequelize-pool.svg?style=flat-square)](https://travis-ci.org/sushantdhiman/sequelize-pool)
+[![Travis (.org)](https://img.shields.io/travis/sushantdhiman/sequelize-pool.svg?style=flat-square)](https://travis-ci.org/sushantdhiman/sequelize-pool) [![Greenkeeper badge](https://badges.greenkeeper.io/sequelize/sequelize-pool.svg)](https://greenkeeper.io/)
 
 
   Resource pool. Can be used to reuse or throttle expensive resources such as
